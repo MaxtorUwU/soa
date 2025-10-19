@@ -1,0 +1,99 @@
+version: '3.9'
+
+services:
+  servicio_usuarios:
+    build: ./servicio_usuarios
+    container_name: servicio_usuarios
+    ports:
+      - "5100:5100"
+    environment:
+      - DB_HOST=postgres
+      - DB_NAME=gestor_correos
+      - DB_USER=gestor_user
+      - DB_PASS=1234
+    depends_on:
+      - postgres
+    networks:
+      - soa-net
+
+  servicio_correos:
+    build: ./servicio_correos
+    container_name: servicio_correos
+    ports:
+      - "5200:5200"
+    environment:
+      - ES_HOST=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - soa-net
+
+  servicio_logs:
+    build: ./servicio_logs
+    container_name: servicio_logs
+    ports:
+      - "5400:5400"
+    environment:
+      - DB_HOST=postgres
+      - DB_NAME=gestor_correos
+      - DB_USER=gestor_user
+      - DB_PASS=1234
+    depends_on:
+      - postgres
+    networks:
+      - soa-net
+
+  servicio_pst:
+    build: ./servicio_pst
+    container_name: servicio_pst
+    ports:
+      - "5300:5300"
+    environment:
+      - DB_HOST=postgres
+      - DB_NAME=gestor_correos
+      - DB_USER=gestor_user
+      - DB_PASS=1234
+    volumes:
+      - ./data/pst_files:/app/pst_files
+    depends_on:
+      - postgres
+    networks:
+      - soa-net
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=gestor_correos
+      - POSTGRES_USER=gestor_user
+      - POSTGRES_PASSWORD=1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    networks:
+      - soa-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - soa-net
+
+networks:
+  soa-net:
+    driver: bridge
+
+volumes:
+  pg_data:
+  es_data:
