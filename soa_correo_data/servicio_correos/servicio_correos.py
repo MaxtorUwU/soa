@@ -56,7 +56,7 @@ def connect_to_esb():
 # --- Manejador de Transacciones ---
 def handle_tx(tx):
     # tx llega como "CORREsearch;..."
-    tx = tx[5:] # <-- ¡FIX APLICADO AQUÍ!
+    tx = tx[5:] # Ignora los 5 primeros caracteres
     # ahora tx es "search;..."
 
     es_search_url = os.getenv("ES_HOST") + "/emails/_search"
@@ -111,7 +111,11 @@ def start_service():
             response = handle_tx(tx_payload)
             
             if response is not None:
-                response_tx = f"{len(response):05d}{response}"
+                # --- FIX FINAL: Incluir el nombre del servicio en la respuesta ---
+                service_name = os.getenv("SERVICE_NAME")
+                payload = service_name + response # Ej: "CORRE" + "[...]"
+                response_tx = f"{len(payload):05d}{payload}"
+                
                 esb_socket.sendall(response_tx.encode())
             else:
                 print(f"[CORRE] Ignorando TX (sin respuesta): {tx_payload}")

@@ -7,11 +7,11 @@ ESB_PORT = 5000  # Puerto del ESB que definimos
 
 # --- Datos del Nuevo Usuario ---
 # ¡Modifica estos valores!
-NOMBRE = "Saimon El Admin"
-EMAIL = "saimon@admin.com"
-PASSWORD = "passwordinhackeable"
+NOMBRE = "MAXIMUS CAROZZIS"
+EMAIL = "maximus@carozzis.com"
+PASSWORD = "GIADACH_SOA123"
 ES_ADMIN = "True"  # "True" o "False"
-# ---------------------------------
+# -----------------------------
 
 # 1. Definir el servicio y los datos (según el PDF)
 servicio = "USUAR"

@@ -57,7 +57,7 @@ def connect_to_esb():
 # --- Manejador de Transacciones ---
 def handle_tx(tx, conn_pg):
     # tx llega como "LOGAUaddlog;..."
-    tx = tx[5:] # <-- ¡FIX APLICADO AQUÍ!
+    tx = tx[5:] # Ignora los 5 primeros caracteres
     # ahora tx es "addlog;..."
 
     op, *params = tx.split(";")
@@ -119,7 +119,11 @@ def start_service():
             response = handle_tx(tx_payload, conn_pg)
             
             if response is not None:
-                response_tx = f"{len(response):05d}{response}"
+                # --- FIX FINAL: Incluir el nombre del servicio en la respuesta ---
+                service_name = os.getenv("SERVICE_NAME")
+                payload = service_name + response # Ej: "LOGAU" + "OK" = "LOGAUOK"
+                response_tx = f"{len(payload):05d}{payload}" # Ej: "00008LOGAUOK"
+                
                 esb_socket.sendall(response_tx.encode())
             else:
                 print(f"[LOGAU] Ignorando TX (sin respuesta): {tx_payload}")

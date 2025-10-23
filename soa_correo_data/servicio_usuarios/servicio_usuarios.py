@@ -57,7 +57,7 @@ def connect_to_esb():
 # --- Manejador de Transacciones ---
 def handle_tx(tx, conn_pg):
     # tx llega como "USUARregis;..." o "USUARlogin;..."
-    tx = tx[5:] # <-- ¡FIX APLICADO AQUÍ! (Ignora los 5 primeros caracteres)
+    tx = tx[5:] # Ignora los 5 primeros caracteres
     # ahora tx es "regis;..." o "login;..."
     
     op, *params = tx.split(";")
@@ -117,11 +117,14 @@ def start_service():
             tx_payload = tx_with_prefix[5:] # Quitar los 5 dígitos del prefijo
             print(f"[USUAR] TX (desde ESB): {tx_payload}")
             
-            # Pasamos el tx_payload que SÍ incluye el prefijo del servicio
             response = handle_tx(tx_payload, conn_pg) 
             
             if response is not None:
-                response_tx = f"{len(response):05d}{response}"
+                # --- FIX FINAL: Incluir el nombre del servicio en la respuesta ---
+                service_name = os.getenv("SERVICE_NAME")
+                payload = service_name + response # Ej: "USUAR" + "OK" = "USUAROK"
+                response_tx = f"{len(payload):05d}{payload}" # Ej: "00007USUAROK"
+                
                 esb_socket.sendall(response_tx.encode())
             else:
                 print(f"[USUAR] Ignorando TX (sin respuesta): {tx_payload}")
